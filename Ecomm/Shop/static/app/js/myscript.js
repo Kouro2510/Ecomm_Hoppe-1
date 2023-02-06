@@ -21,7 +21,7 @@
 
 
 
-    $('.plus-cart').click(function(){
+    $('.minus-cart').click(function(){
         var id=$(this).attr("pid").toString();
         var eml = this;
         console.log("pid=",id);

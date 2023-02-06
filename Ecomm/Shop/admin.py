@@ -20,7 +20,7 @@ class CartModelAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'amount', 'razorpay_payment_id', 'razorpay_payment_status', 'razorpay_payment_id',
+    list_display = ['id', 'user', 'amount', 'stripe_payment_id', 'stripe_payment_status', 'stripe_payment_id',
                     'paid']
 
 

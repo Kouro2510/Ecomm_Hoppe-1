@@ -2,12 +2,14 @@
 {% load static %}
 {% block title %}Cart{% endblock title %}
 {% block main-content %}
-<div class="container my-5">
+
+<h1 class="text-center mb-5">Shopping Cart</h1>
+<div style="display: flex" class="container my-5">
     {% if cart %}
-    <h1 class="text-center mb-5">Shopping Cart</h1>
-    <div class="col-sm-8">
+
+    <div style="margin-right: 20px" class="col-sm-8">
         <div class="card">
-            <div class="card-body">
+            <div  class="cart-body">
                 <h3>Cart</h3>
                 {% for item in cart %}
                 <div class="row">
@@ -29,13 +31,15 @@
                             <div class="d-flex justify-content-between">
                                 <a href="#" pid="{{item.product.id}}" class="remove-cart btn btn-sm btn-secondary mr-3">Remove
                                     item</a>
-                                <p class="mb-0"><span><strong>Rs. {{item.product.discounted_price}}</strong></span></p>
+                                <p class="mb-0"><span><strong style="margin-right: 20px" >Rs. {{item.product.discounted_price}}</strong></span></p>
                             </div>
                         </div>
                     </div>
+
                 </div>
                 <hr class="text-muted">
                 {% endfor %}
+
             </div>
         </div>
     </div>

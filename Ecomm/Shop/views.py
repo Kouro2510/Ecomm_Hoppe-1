@@ -113,14 +113,25 @@ class UpdateAddress(View):
 
 
 def add_to_cart(request):
+    user = request.user
     product_id = request.GET.get('prod_id')
-    product = Product.objects.get(id=product_id)
-    if request.user.is_authenticated:
-        cart, create = Cart.objects.get_or_create(user=request.user, product=product)
-        cart.quantity += 1
-        cart.save()
-
-        return redirect("/cart")
+    if Cart.objects.filter(product=product_id).exists():
+        prod_id = request.GET['prod_id']
+        c = Cart.objects.get(Q(product=prod_id) & Q(user=request.user))
+        c.quantity += 1
+        c.save()
+        user = request.user
+        cart = Cart.objects.filter(user=user)
+        amount = 0
+        for p in cart:
+            value = p.quantity * p.product.discounted_price
+            amount = amount + value
+        return redirect('/cart')
+    else:
+        pass
+        product = Product.objects.get(id=product_id)
+        Cart(user=user, product=product).save()
+        return redirect('/cart')
 
 
 def show_cart(request):
@@ -144,49 +155,36 @@ class checkout(View):
             value = p.quantity * p.product.discounted_price
             famount = famount + value
         totalamount = famount + 40
-        razoramount = int(totalamount * 100)
-        client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
-        data = {"amount": razoramount, "currency": "INR", "receipt": "order_rcptid_12"}
-        payment_response = client.order.create(data=data)
-        print(payment_response)
-        # {'id': 'order_KU0n5eKcEeiLOm', 'entity': 'order', 'amount': '14500', 'amount_paid': '0', 'amount_due': '14500', 'currency': 'INR', 'receipt': 'order_rcptid_12', 'offer_id': 'None', 'status': 'created', 'attempts': '0', 'notes': '[]', 'createed_at': '1665829122'}
-        order_id = payment_response['id']
-        order_status = payment_response['status']
-        if order_status == 'created':
-            payment = Payment(
-                user=user,
-                amount=totalamount,
-                razorpay_order_id=order_id,
-                razorpay_payment_status=order_status
-            )
-            payment.save()
+
         return render(request, 'app/checkout.html', locals())
 
 
 def payment_done(request):
-    order_id = request.GET.get('order_id')
-    payment_id = request.GET.get('payment_id')
-    cust_id = request.GET.get(cust_id)
-    #     print("payment_done : old = ", order_id, "pid = ", payment_id, " cid= ",cust_id)
-    user = request.user
-    #     return redirect ("orders")
-    customer = Customer.objects.get(id=cust_id)
-    #     To update payment status and payment id
-    payment = Payment.objects.get(razorpay_order_id=order_id)
-    payment.paid = True
-    payment.razorpay_payment_id = payment_id
-    payment.save()
-    #     To save order details
-    cart = Cart.objects.filter(user=user)
-    for c in cart:
-        OrderPlaced(user=user, customer=customer, porduct=c.product, quantity=c.quantity, payment=payment).save()
-        c.delete
-    return redirect("orders")
+    pass
+#     order_id = request.GET.get('order_id')
+#     payment_id = request.GET.get('payment_id')
+#     cust_id = request.GET.get('cust_id')
+#     #     print("payment_done : old = ", order_id, "pid = ", payment_id, " cid= ",cust_id)
+#     user = request.user
+#     #     return redirect ("orders")
+#     customer = Customer.objects.get(id=cust_id)
+#     #     To update payment status and payment id
+#     payment = Payment.objects.get(razorpay_order_id=order_id)
+#     payment.paid = True
+#     payment.razorpay_payment_id = payment_id
+#     payment.save()
+#     #     To save order details
+#     cart = Cart.objects.filter(user=user)
+#     for c in cart:
+#         OrderPlaced(user=user, customer=customer, porduct=c.product, quantity=c.quantity, payment=payment).save()
+#         c.delete()
+#     return redirect("orders")
 
 def plus_cart(request):
-    if request.method == 'GET':
+    product_id = request.GET.get('prod_id')
+    if Cart.objects.filter(product=product_id).exists():
         prod_id = request.GET['prod_id']
-        c = Cart.objects.get(Q(product=prod_id) and Q(user=request.user))
+        c = Cart.objects.get(Q(product=prod_id) & Q(user=request.user))
         c.quantity += 1
         c.save()
         user = request.user
@@ -206,9 +204,10 @@ def plus_cart(request):
 
 
 def minus_cart(request):
-    if request.method == 'GET':
+    product_id = request.GET.get('prod_id')
+    if Cart.objects.filter(product=product_id).exists():
         prod_id = request.GET['prod_id']
-        c = Cart.objects.get(Q(product=prod_id) and Q(user=request.user))
+        c = Cart.objects.get(Q(product=prod_id) & Q(user=request.user))
         c.quantity -= 1
         c.save()
         user = request.user
@@ -228,9 +227,10 @@ def minus_cart(request):
 
 
 def remove_cart(request):
-    if request.method == 'GET':
+    product_id = request.GET.get('prod_id')
+    if Cart.objects.filter(product=product_id).exists():
         prod_id = request.GET['prod_id']
-        c = Cart.objects.get(Q(product=prod_id) and Q(user=request.user))
+        c = Cart.objects.get(Q(product=prod_id) & Q(user=request.user))
         c.delete()
         user = request.user
         cart = Cart.objects.filter(user=user)
