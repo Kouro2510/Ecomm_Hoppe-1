@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_view
 from .forms import LoginForm, MyPasswordResetForm, MyPasswordChangeForm, MySetPasswordForm
+from .views import CreateCheckoutSessionView, ProductLandingPageView
 
 urlpatterns = [
                   path("home", views.home, name="home"),
@@ -16,10 +17,12 @@ urlpatterns = [
                   path('cart/', views.show_cart, name='showcart'),
                   path('checkout/', views.checkout.as_view(), name='checkout'),
                   path('paymentdone/', views.payment_done, name='paymentdone'),
-                  path('orders/', views.orders, name='orders'),
+                  path('orders/', views.home, name='orders'),
                   path('pluscart/', views.plus_cart),
                   path('minuscart/', views.minus_cart),
                   path('removecart/', views.remove_cart),
+                  path('create-checkout-session', CreateCheckoutSessionView.as_view(), name = 'create-checkout-session'),
+                  path('', ProductLandingPageView.as_view(), name = 'landing-page'),
                   # login authentication
                   path('registration/', views.CustomerRegistrationView.as_view(), name='customerregistration'),
                   path('accounts/login.',

@@ -4,11 +4,18 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from urllib import request
 from django.views import View
+from flask import jsonify
+from flask import Flask, render_template, jsonify, request
 from .models import Product, Customer, Cart, Payment, OrderPlaced
 from .forms import CustomerRegistrationForm, CustomerProfileForm
 from django.contrib import messages
 from django.conf import settings
-import razorpay
+import json
+from django.views.generic import TemplateView
+
+from .server import calculate_order_amount, app
+
+stripe.api_key = settings.STRIPE_KEY_SECRET
 
 
 # Create your views here.
@@ -146,34 +153,96 @@ def show_cart(request):
     return render(request, 'app/addtocart.html', locals())
 
 
+class orders(View):
+    def calculate_order_amount(items):
+        # Replace this constant with a calculation of the order's amount
+        # Calculate the order total on the server to prevent
+        # people from directly manipulating the amount on the client
+        return 1400
+
+    def create_payment(request):
+        try:
+            data = json.loads(request.data)
+            # Create a PaymentIntent with the order amount and currency
+            intent = stripe.PaymentIntent.create(
+                amount=calculate_order_amount(data['items']),
+                currency='usd',
+                automatic_payment_methods={
+                    'enabled': True,
+                },
+            )
+            return jsonify({
+                'clientSecret': intent['client_secret']
+            })
+        except Exception as e:
+            return jsonify(error=str(e)), 403
+
+
 class checkout(View):
     def get(self, request):
         user = request.user
         add = Customer.objects.filter(user=user)
         cart_items = Cart.objects.filter(user=user)
         famount = 0
-        for p in cart_items:
-            value = p.quantity * p.product.discounted_price
-            famount = famount + value
-            for p in cart_items:
-                value = p.quantity * p.product.discounted_price
-                famount = famount + value
-        totalamount = famount + 40
-        stripeamount = int(totalamount * 100)
-        client = auth = (settings.STRIPE_KEY_ID, settings.STRIPE_KEY_SECRET)
-        data = {"amount": stripeamount, "currency": "Dolas", "receipt": "order_rcptid_12"}
-        payment_response = client.orders.create(data=data)
-        order_id = payment_response['id']
-        order_status = payment_response['status']
-        if order_status == 'created':
-            payment = Payment(
-                user=user,
-                amount=totalamount,
-                stripe_order_id=order_id,
-                stripe_payment_status=order_status
-            )
-            payment.save()
+        # for p in cart_items:
+        #     value = p.quantity * p.product.discounted_price
+        #     famount = famount + value
+        #     for p in cart_items:
+        #         value = p.quantity * p.product.discounted_price
+        #         famount = famount + value
+        # totalamount = famount + 40
+        # stripeamount = int(totalamount * 100)
+        # client = auth = (settings.STRIPE_KEY_ID, settings.STRIPE_KEY_SECRET)
+        # data = {"amount": stripeamount, "currency": "Dolas", "receipt": "order_rcptid_12"}
+        # payment_response = orders.create_payment
+        # order_id = payment_response['id']
+        # order_status = payment_response['status']
+        # if order_status == 'created':
+        #     payment = Payment(
+        #         user=user,
+        #         amount=totalamount,
+        #         stripe_order_id=order_id,
+        #         stripe_payment_status=order_status
+        #     )
+        #     payment.save()
         return render(request, 'app/checkout.html', locals())
+
+
+class CreateCheckoutSessionView(View):
+    def post(self, request, *args, **kwargs):
+        YOUR_DOMAIN = "http://127.0.0.1:8000/"
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_times=[
+                {
+                    'prices_data': {
+                        'currency': 'Dolas',
+                        'totalamount': 'totalamount',
+                        'product_data': {
+                            'name': 'Product'
+                        },
+                    },
+                    'quantity': 1,
+                }
+            ],
+            model='payment',
+            success_url=YOUR_DOMAIN + '/success/',
+            cancel_url=YOUR_DOMAIN + '/cancel/',
+        )
+        return JsonResponse({
+            'id': checkout_session.id
+        })
+
+
+class ProductLandingPageView(TemplateView):
+    template_name = "landing.html"
+    product = Product.objects.get(name="Product")
+    def get_context_data(self, **kwargs):
+        context = super(ProductLandingPageView, self).get_context_data(**kwargs)
+        context.update({
+            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
+        })
+        return context
 
 
 def payment_done(request):
