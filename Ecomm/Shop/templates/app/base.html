@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{% static 'app/css/owl.carousel.min.css' %}"/>
     <link rel="stylesheet" href="{% static 'app/css/all.min.css' %}"/>
     <link rel="stylesheet" href="{% static 'app/css/style.css' %}"/>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{% static 'checkout.js' %}" defer></script>
+<!--    <link rel="stylesheet" href="checkout.css" />-->
     <title>Daily Product | {% block title %} {% endblock title %}</title>
 </head>
 <body>
@@ -105,3 +108,4 @@
 <script src="{% static 'app/js/owl.carousel.min.js' %}"></script>
 <script src="{% static 'app/js/all.min.js' %}"></script>
 <script src="{% static 'app/js/myscript.js' %}"></script>
+<script src="{% static 'app/js/checkout.js' %}"></script>

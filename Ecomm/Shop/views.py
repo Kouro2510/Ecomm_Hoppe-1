@@ -1,3 +1,4 @@
+import stripe
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -154,31 +155,48 @@ class checkout(View):
         for p in cart_items:
             value = p.quantity * p.product.discounted_price
             famount = famount + value
+            for p in cart_items:
+                value = p.quantity * p.product.discounted_price
+                famount = famount + value
         totalamount = famount + 40
-
+        stripeamount = int(totalamount * 100)
+        client = auth = (settings.STRIPE_KEY_ID, settings.STRIPE_KEY_SECRET)
+        data = {"amount": stripeamount, "currency": "Dolas", "receipt": "order_rcptid_12"}
+        payment_response = client.orders.create(data=data)
+        order_id = payment_response['id']
+        order_status = payment_response['status']
+        if order_status == 'created':
+            payment = Payment(
+                user=user,
+                amount=totalamount,
+                stripe_order_id=order_id,
+                stripe_payment_status=order_status
+            )
+            payment.save()
         return render(request, 'app/checkout.html', locals())
 
 
 def payment_done(request):
     pass
-#     order_id = request.GET.get('order_id')
-#     payment_id = request.GET.get('payment_id')
-#     cust_id = request.GET.get('cust_id')
-#     #     print("payment_done : old = ", order_id, "pid = ", payment_id, " cid= ",cust_id)
-#     user = request.user
-#     #     return redirect ("orders")
-#     customer = Customer.objects.get(id=cust_id)
-#     #     To update payment status and payment id
-#     payment = Payment.objects.get(razorpay_order_id=order_id)
-#     payment.paid = True
-#     payment.razorpay_payment_id = payment_id
-#     payment.save()
-#     #     To save order details
-#     cart = Cart.objects.filter(user=user)
-#     for c in cart:
-#         OrderPlaced(user=user, customer=customer, porduct=c.product, quantity=c.quantity, payment=payment).save()
-#         c.delete()
-#     return redirect("orders")
+    order_id = request.GET.get('order_id')
+    payment_id = request.GET.get('payment_id')
+    cust_id = request.GET.get('cust_id')
+    #     print("payment_done : old = ", order_id, "pid = ", payment_id, " cid= ",cust_id)
+    user = request.user
+    #     return redirect ("orders")
+    customer = Customer.objects.get(id=cust_id)
+    #     To update payment status and payment id
+    payment = Payment.objects.get(stripe_order_id=order_id)
+    payment.paid = True
+    payment.stripe_payment_id = payment_id
+    payment.save()
+    #     To save order details
+    cart = Cart.objects.filter(user=user)
+    for c in cart:
+        OrderPlaced(user=user, customer=customer, porduct=c.product, quantity=c.quantity, payment=payment).save()
+        c.delete()
+    return redirect("orders")
+
 
 def plus_cart(request):
     product_id = request.GET.get('prod_id')
