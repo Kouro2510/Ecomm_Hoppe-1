@@ -79,32 +79,32 @@
 <!--    </form>-->
 {% endblock main-content %}
 
-{% block payment-gateway %}
-<script>
-    var options = {
-        "key":"pk_test_51MYPUxGh9Ruj27FTfeJciWUGCxEExrBueY3nlA4p5b7R2QHSJJGIfHP0vRCaQzrt3xxT8umKZH8kWYdVAhdhFDM300gny8X6rl",
-        "amount":"{{pkamount}}",
-        "currency":"Dolas",
-        "name":"Product",
-        "description":"Purchase Product",
-        "order_id":"{{order_id}}",
-        "handler": function (response):{
-            console.log("success");
-                var form = document.getElemtById("myform");
-                window.location.href = `http://127.0.0.1:8000/paymentdone?order_id=${response.stripe_order_id}&payment_id=${response.stripe_payment_id}&cust_id=${form.elements["custid"].value}`
-        },
-        "theme":{
-        "color": "#3399cc";
-        }
-    };
-    var s1 = new Stripe(options);
-    s1.on('payment.failed', function (response){
-        alert(response).error.description);
-    });
-document.getElementById('s-button1').onclick = function(e){
-    console.log("button click");
-    s1.open();
-    e.preventDefault():
-    }
-</script>
-{% endblock payment-gateway %}
+<!--{% block payment-gateway %}-->
+<!--<script>-->
+<!--    var options = {-->
+<!--        "key":"pk_test_51MYPUxGh9Ruj27FTfeJciWUGCxEExrBueY3nlA4p5b7R2QHSJJGIfHP0vRCaQzrt3xxT8umKZH8kWYdVAhdhFDM300gny8X6rl",-->
+<!--        "amount":"{{pkamount}}",-->
+<!--        "currency":"Dolas",-->
+<!--        "name":"Product",-->
+<!--        "description":"Purchase Product",-->
+<!--        "order_id":"{{order_id}}",-->
+<!--        "handler": function (response):{-->
+<!--            console.log("success");-->
+<!--                var form = document.getElemtById("myform");-->
+<!--                window.location.href = `http://127.0.0.1:8000/paymentdone?order_id=${response.stripe_order_id}&payment_id=${response.stripe_payment_id}&cust_id=${form.elements["custid"].value}`-->
+<!--        },-->
+<!--        "theme":{-->
+<!--        "color": "#3399cc";-->
+<!--        }-->
+<!--    };-->
+<!--    var s1 = new Stripe(options);-->
+<!--    s1.on('payment.failed', function (response){-->
+<!--        alert(response).error.description);-->
+<!--    });-->
+<!--document.getElementById('s-button1').onclick = function(e){-->
+<!--    console.log("button click");-->
+<!--    s1.open();-->
+<!--    e.preventDefault():-->
+<!--    }-->
+<!--</script>-->
+<!--{% endblock payment-gateway %}-->

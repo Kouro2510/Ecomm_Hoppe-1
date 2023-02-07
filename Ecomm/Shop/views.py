@@ -190,7 +190,7 @@ class checkout(View):
         #     for p in cart_items:
         #         value = p.quantity * p.product.discounted_price
         #         famount = famount + value
-        # totalamount = famount + 40
+        totalamount = famount + 40
         # stripeamount = int(totalamount * 100)
         # client = auth = (settings.STRIPE_KEY_ID, settings.STRIPE_KEY_SECRET)
         # data = {"amount": stripeamount, "currency": "Dolas", "receipt": "order_rcptid_12"}
@@ -208,45 +208,56 @@ class checkout(View):
         return render(request, 'app/checkout.html', locals())
 
 
-class CreateCheckoutSessionView(View):
-    def post(self, request, *args, **kwargs):
-        YOUR_DOMAIN = "http://127.0.0.1:8000/"
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_times=[
-                {
-                    'prices_data': {
-                        'currency': 'Dolas',
-                        'totalamount': 'totalamount',
-                        'product_data': {
-                            'name': 'Product'
-                        },
-                    },
-                    'quantity': 1,
-                }
-            ],
-            model='payment',
-            success_url=YOUR_DOMAIN + '/success/',
-            cancel_url=YOUR_DOMAIN + '/cancel/',
-        )
-        return JsonResponse({
-            'id': checkout_session.id
-        })
-
-
-class ProductLandingPageView(TemplateView):
-    template_name = "landing.html"
-    product = Product.objects.get(name="Product")
-    def get_context_data(self, **kwargs):
-        context = super(ProductLandingPageView, self).get_context_data(**kwargs)
-        context.update({
-            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
-        })
-        return context
+# class CreateCheckoutSessionView(View):
+#     def post(self, request, *args, **kwargs):
+#         product_id=self.kwargs('pk')
+#
+#         YOUR_DOMAIN = "http://127.0.0.1:8000/"
+#         checkout_session = stripe.checkout.Session.create(
+#             payment_method_types=['card'],
+#             line_times=[
+#                 {
+#                     'prices_data': {
+#                         'currency': 'Dolas',
+#                         'totalamount': 'totalamount',
+#                         'product_data': {
+#                             'name': 'Product'
+#                         },
+#                     },
+#                     'quantity': 1,
+#                 }
+#             ],
+#             model='payment',
+#             success_url=YOUR_DOMAIN + '/success/',
+#             cancel_url=YOUR_DOMAIN + '/cancel/',
+#         )
+#         return JsonResponse({
+#             'id': checkout_session.id
+#         })
+#
+#
+# class ProductLandingPageView(TemplateView):
+#     template_name = "landing.html"
+#     product = Product.objects.get(name="Product")
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(ProductLandingPageView, self).get_context_data(**kwargs)
+#         context.update({
+#             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
+#         })
+#         return context
+#
+#
+# class SuccessView(TemplateView):
+#     template_name = "success.html"
+#
+#
+# class CancelView(TemplateView):
+#     template_name = "cancel.html"
 
 
 def payment_done(request):
-    pass
+    # pass
     order_id = request.GET.get('order_id')
     payment_id = request.GET.get('payment_id')
     cust_id = request.GET.get('cust_id')
@@ -262,7 +273,7 @@ def payment_done(request):
     #     To save order details
     cart = Cart.objects.filter(user=user)
     for c in cart:
-        OrderPlaced(user=user, customer=customer, porduct=c.product, quantity=c.quantity, payment=payment).save()
+        OrderPlaced(user=user, customer=customer, product=c.product, quantity=c.quantity, payment=payment).save()
         c.delete()
     return redirect("orders")
 
