@@ -1,0 +1,98 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Buy Now{% endblock title %}
+{% block main-content %}
+<div class="container">
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{msg}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row mt-5">
+        <div class="col-sm-6">
+            <h4>Order Summary</h4>
+            <hr>
+            {% for item in cart_items %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5>Product: {{item.product.title}}</h5>
+                    <p>Quantity: {{item.quantity}}</p>
+                    <p class="fw-blod">Price: {{item.product.discounted_price}}</p>
+                </div>
+            </div>
+            {% endfor %}
+            <p class="fw-blod">Total Cost + Rs. 40= {{totalamount}}</p>
+            <small>Term and Condition:</small>
+        </div>
+        <div class="col-sm-4 offset-sm-1">
+            <h4>Select Shipping Address</h4>
+            <hr>
+            <form method="post" id="myform">
+                {% csrf_token %}
+                {% for ad in add %}
+                <div class="card">
+                    <div class="card-body">
+                        <h5>{{ad.name}}</h5>
+                        <p>Mobile: {{ad.mobile}}</p>
+                        <p>{{ad.locality}} {{ad.city}} {{ad.area}} - {{ad.zipcode}}</p>
+                    </div>
+
+
+                </div>
+              <div class="form-check mt-2 mb-5">
+                        <input type="radio" name="custid" id="custadd{{forloop.counter}}" value="{{ad.id}}"
+                               class="form-check-input">
+                        <label for="custadd{{forloop.counter}}" class="form-check-label fw-bold">
+                            Address: {{forloop.counter}}</label>
+                    </div>
+              {% endfor %}
+              <div class="form-check mb-3">
+                        <label for="totamount" class="form-label">Total Amount</label>
+                        <input type="number" name="totalamount" value="{{totalamount}}" readonly class="form-control">
+                    </div>
+              <div class="text-end">
+<!--                                      <button class="btn btn-warning mt-3 px-5 fw-bold">Payment</button>-->
+                          <!--            <div id="paypal-button-container">-->
+                      <button id="str-button1" type="submit" class="btn btn-warning mt-3 px-5 fw-bold">Payment
+                      </button>
+                          <!--            </div>-->
+                    </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--&lt;!&ndash; Display a payment form &ndash;&gt;-->
+<!--    <form id="payment-form">-->
+<!--      <div id="link-authentication-element">-->
+<!--        &lt;!&ndash;Stripe.js injects the Link Authentication Element&ndash;&gt;-->
+<!--      </div>-->
+<!--      <div id="payment-element">-->
+<!--        &lt;!&ndash;Stripe.js injects the Payment Element&ndash;&gt;-->
+<!--      </div>-->
+<!--      <button id="submit">-->
+<!--        <div class="spinner hidden" id="spinner"></div>-->
+<!--        <span id="button-text">Pay now</span>-->
+<!--      </button>-->
+<!--      <div id="payment-message" class="hidden"></div>-->
+<!--    </form>-->
+{% endblock main-content %}
+
+{% block payment-gateway %}
+<script>
+    var options = {
+        "key":"pk_test_51MYPsNHsW0Aawd6TkQeIZ0yDCYqA9Z6y2UNdk7wkRQYy7zgNkAfGoh6bxKaI9ZTGLe7xPmkJHYbhUSJsP3qyx2xV00pgmdKXAK",
+        "amount":"{{pkamount}}",
+        "currency":"Dolas",
+        "name":"Product",
+        "description":"Purchase Product",
+        "order_id":"{{order_id}}",
+        "handler": function (response):{
+            console.log("success");
+                var form = document.getElemtById("myform");
+                window.location.href = http://127.0.0.1:8000/paymentdone?order_id=${response
+        }
+    }
+</script>
+{% endblock payment-gateway %}
